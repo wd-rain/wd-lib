@@ -1,11 +1,9 @@
 #pragma once
 
 #define min(a, b) ((a) < (b) ? (a) : (b))                                                                      // 比较小值
-#define max(a, b) ((a) > (b) ? (a) : (b))                                                                      // 比较大值
-#define abs(a) ((a) > 0 ? (a) : (-(a)))                                                                        // 绝对值
+#define max(a, b) ((a) > (b) ? (a) : (b))                                                                      // 比较大值                                                                     // 绝对值
 #define constrain(x, a, b) max(a, min(b, x))                                                                   // 限制范围 x 限幅 [a, b]
 #define linear_map(x, x1, x2, y1, y2) constrain(((y1) + ((x) - (x1)) * ((y2) - (y1)) / ((x2) - (x1))), y1, y2) // 线性映射 x 从 [x1, x2] 到 [y1, y2] x2 应该大于 x1, y2 应该大于 y1
-#define sign(a) ((a) > 0 ? 1 : ((a) < 0 ? -1 : 0))                                                             // 取符号 (-1 / 0 / 1)
 
 #define BIT(n) (1U << (n))                                                                                     // 位掩码 第 n 位为 1
 #define SET_BIT(x, n) ((x) |= BIT(n))                                                                          // 置位 x 的第 n 位
