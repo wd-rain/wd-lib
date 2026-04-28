@@ -18,14 +18,16 @@ tags:
 
 ## 接口总览
 
-| 类别 | 接口 | 基本功能 | 使用要点 |
-|---|---|---|---|
-| 配置 | `CMD_LINE_MAX_ARGC` | 配置最多解析的参数数量 | 默认值为 `4`，必须大于 `0` |
-| 类型 | `cmd_line_fn` | 命令回调函数类型 | 形参为 `argc` 和 `argv`，返回 `int` |
-| 类型 | `CmdLine` | 命令对象 | 保存回调、命令名和描述文本 |
-| 初始化 | `cmd_line_init(self, fn, name, desc)` | 初始化命令对象 | 不复制字符串，只保存指针 |
-| 执行 | `cmd_line_exe(self, line)` | 匹配并执行命令 | 返回回调函数返回值，`line` 必须可写 |
-| 释放 | `cmd_line_deinit(self)` | 清空命令对象 | 将结构体成员置空 |
+| 类别  | 接口                                    | 基本功能        | 使用要点                         |
+| --- | ------------------------------------- | ----------- | ---------------------------- |
+| 配置  | `CMD_LINE_MAX_ARGC`                   | 配置最多解析的参数数量 | 默认值为 `4`，必须大于 `0`            |
+| 类型  | `cmd_line_fn`                         | 命令回调函数类型    | 形参为 `argc` 和 `argv`，返回 `int` |
+| 类型  | `CmdLine`                             | 命令对象        | 保存回调、命令名和描述文本                |
+| 初始化 | `cmd_line_init(self, fn, name, desc)` | 初始化命令对象     | 不复制字符串，只保存指针                 |
+| 执行  | `cmd_line_exe(self, line)`            | 匹配并执行命令     | 返回回调函数返回值，`line` 必须可写        |
+| 访问  | `cmd_line_name(self)`                 | 获取命令名       | 未设置时返回 `"NONE"`              |
+| 访问  | `cmd_line_desc(self)`                 | 获取命令描述      | 未设置时返回 `"NONE"`              |
+| 释放  | `cmd_line_deinit(self)`               | 清空命令对象      | 将结构体成员置空                     |
 
 ## 配置宏
 
@@ -90,8 +92,8 @@ static int set_cmd(int argc, char** argv)
 typedef struct cmdline_t
 {
     cmd_line_fn fn;
-    char* name;
-    char* desc;
+    const char* name;
+    const char* desc;
 }CmdLine;
 ```
 
@@ -102,6 +104,7 @@ typedef struct cmdline_t
 | `desc` | 命令描述文本，当前实现只保存，不参与执行 |
 
 `name` 和 `desc` 不会被复制，调用者需要保证它们在命令对象使用期间有效。
+字段类型为 `const char*`，适合直接保存字符串字面量或只读描述文本。
 
 ## 初始化接口
 
@@ -110,7 +113,7 @@ typedef struct cmdline_t
 初始化一个 `CmdLine` 对象。
 
 ```c
-void cmd_line_init(CmdLine* self, cmd_line_fn fn, char* name, char* desc);
+void cmd_line_init(CmdLine* self, cmd_line_fn fn, const char* name, const char* desc);
 ```
 
 示例：
@@ -181,6 +184,50 @@ cmd_line_exe(&cmd, "set speed 100");  // 错误：字符串字面量不可写
 char line[] = "set speed 100";
 cmd_line_exe(&cmd, line);
 ```
+
+## 访问接口
+
+### `cmd_line_name(self)`
+
+获取命令对象中的命令名。
+
+```c
+const char* cmd_line_name(const CmdLine* self);
+```
+
+示例：
+
+```c
+printf("name=%s\n", cmd_line_name(&cmd));
+```
+
+返回值规则：
+
+- `self != NULL` 且 `self->name != NULL` 时，返回 `self->name`。
+- `self == NULL` 或 `self->name == NULL` 时，返回 `"NONE"`。
+
+返回值类型为 `const char*`，调用者不应修改返回的字符串。
+
+### `cmd_line_desc(self)`
+
+获取命令对象中的描述文本。
+
+```c
+const char* cmd_line_desc(const CmdLine* self);
+```
+
+示例：
+
+```c
+printf("desc=%s\n", cmd_line_desc(&cmd));
+```
+
+返回值规则：
+
+- `self != NULL` 且 `self->desc != NULL` 时，返回 `self->desc`。
+- `self == NULL` 或 `self->desc == NULL` 时，返回 `"NONE"`。
+
+返回值类型为 `const char*`，调用者不应修改返回的字符串。
 
 ## 释放接口
 
@@ -307,6 +354,8 @@ int main(void)
     int ret;
 
     cmd_line_init(&cmd, set_cmd, "set", "set parameter");
+    printf("name=%s\n", cmd_line_name(&cmd));
+    printf("desc=%s\n", cmd_line_desc(&cmd));
     ret = cmd_line_exe(&cmd, line);
     cmd_line_deinit(&cmd);
 
@@ -323,6 +372,8 @@ gcc -std=c99 -Wall -Wextra -g -O0 example.c clib-code\cmdline\cmdline.c -o examp
 输出：
 
 ```text
+name=set
+desc=set parameter
 argc=3
 argv[0]=set
 argv[1]=name
@@ -369,6 +420,7 @@ int main(void)
 - `cmdline` 不分配堆内存，`argv` 指向 `line` 内部的不同位置。
 - 回调函数执行期间可以读取 `argv`，但不应在 `line` 生命周期结束后继续保存这些指针。
 - `cmd_line_exe` 返回 `0` 同时可能表示未执行、参数为空，也可能是回调本身返回了 `0`。如果需要区分这些情况，回调返回值需要自行约定。
+- `cmd_line_name` 和 `cmd_line_desc` 返回只读字符串指针，未设置对应字段时返回 `"NONE"`。
 - 超过 `CMD_LINE_MAX_ARGC` 的参数会被忽略。
 - 未闭合的引号会把已读取的内容作为当前参数的一部分，不返回错误码。
 - `desc` 当前只作为描述字段保存，解析和执行流程不会使用它。

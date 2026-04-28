@@ -6,7 +6,6 @@
 // 配置
 #ifndef CMD_LINE_MAX_ARGC
 #define CMD_LINE_MAX_ARGC 4
-
 #endif
 
 #if CMD_LINE_MAX_ARGC < 1
@@ -19,12 +18,14 @@ typedef int (* cmd_line_fn)(int argc, char** argv);
 typedef struct cmdline_t
 {
     cmd_line_fn fn;
-    char* name;
-    char* desc;
+    const char* name;
+    const char* desc;
 }CmdLine;
 
-void cmd_line_init(CmdLine* self, cmd_line_fn fn, char* name, char* desc);
+void cmd_line_init(CmdLine* self, cmd_line_fn fn, const char* name, const char* desc);
 int cmd_line_exe(CmdLine* self, char* line);
+const char* cmd_line_name(const CmdLine* self);
+const char* cmd_line_desc(const CmdLine* self);
 void cmd_line_deinit(CmdLine* self);
 
 

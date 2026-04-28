@@ -2,6 +2,8 @@
 
 #include <stddef.h>
 
+static const char _cmd_line_none[] = "NONE";
+
 static inline int _cmd_line_is_blank(char c)
 {
     return c == ' ' || (unsigned int)((unsigned char)c - (unsigned char)'\t') <= 4U;
@@ -92,7 +94,7 @@ static int _cmd_line_parse(char* read, char* write, char** argv, int max_argc)
     return argc;
 }
 
-void cmd_line_init(CmdLine* self, cmd_line_fn fn, char* name, char* desc)
+void cmd_line_init(CmdLine* self, cmd_line_fn fn, const char* name, const char* desc)
 {
     if (self == NULL)
     {
@@ -146,6 +148,26 @@ int cmd_line_exe(CmdLine* self, char* line)
     }
 
     return self->fn(argc, argv);
+}
+
+const char* cmd_line_name(const CmdLine* self)
+{
+    if (self != NULL && self->name != NULL)
+    {
+        return self->name;
+    }
+
+    return _cmd_line_none;
+}
+
+const char* cmd_line_desc(const CmdLine* self)
+{
+    if (self != NULL && self->desc != NULL)
+    {
+        return self->desc;
+    }
+
+    return _cmd_line_none;
 }
 
 void cmd_line_deinit(CmdLine* self)
