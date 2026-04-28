@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "cmdline.md",
+                "file": "platform/gpio.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "cmdline"
+              "title": "gpio"
             }
           }
         ]
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "cmdline.md",
+                "file": "platform/gpio.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "cmdline 的大纲"
+              "title": "gpio 的大纲"
             }
           },
           {
@@ -197,8 +197,10 @@
   },
   "active": "2b32c93ddd528501",
   "lastOpenFiles": [
-    "until.md",
+    "platform/gpio.md",
+    "platform.md",
     "cmdline.md",
+    "until.md",
     "cmdline-debug.md",
     "未命名.canvas",
     "欢迎.md"
