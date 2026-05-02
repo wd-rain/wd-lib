@@ -9,9 +9,9 @@ static inline int _cmd_line_is_blank(char c)
     return c == ' ' || (unsigned int)((unsigned char)c - (unsigned char)'\t') <= 4U;
 }
 
-static char* _cmd_line_match_name(char* line, const char* name, char** name_start)
+static char *_cmd_line_match_name(char *line, const char *name, char **name_start)
 {
-    char* p = line;
+    char *p = line;
 
     while (_cmd_line_is_blank(*p))
     {
@@ -38,7 +38,7 @@ static char* _cmd_line_match_name(char* line, const char* name, char** name_star
     return p;
 }
 
-static int _cmd_line_parse(char* read, char* write, char** argv, int max_argc)
+static int _cmd_line_parse(char *read, char *write, char **argv, int max_argc)
 {
     int argc = 0;
     int end = 0;
@@ -94,7 +94,7 @@ static int _cmd_line_parse(char* read, char* write, char** argv, int max_argc)
     return argc;
 }
 
-void cmd_line_init(CmdLine* self, cmd_line_fn fn, const char* name, const char* desc)
+void cmd_line_init(CmdLine *self, cmd_line_fn fn, const char *name, const char *desc)
 {
     if (self == NULL)
     {
@@ -106,10 +106,10 @@ void cmd_line_init(CmdLine* self, cmd_line_fn fn, const char* name, const char* 
     self->desc = desc;
 }
 
-int cmd_line_exe(CmdLine* self, char* line)
+int cmd_line_exe(CmdLine *self, char *line)
 {
     int argc = 0;
-    char* argv[CMD_LINE_MAX_ARGC + 1];
+    char *argv[CMD_LINE_MAX_ARGC + 1];
 
     if (self == NULL || self->fn == NULL || line == NULL)
     {
@@ -118,8 +118,8 @@ int cmd_line_exe(CmdLine* self, char* line)
 
     if (self->name != NULL && *self->name != '\0')
     {
-        char* name_start;
-        char* name_end = _cmd_line_match_name(line, self->name, &name_start);
+        char *name_start;
+        char *name_end = _cmd_line_match_name(line, self->name, &name_start);
 
         if (name_end == NULL)
         {
@@ -150,7 +150,7 @@ int cmd_line_exe(CmdLine* self, char* line)
     return self->fn(argc, argv);
 }
 
-const char* cmd_line_name(const CmdLine* self)
+const char *cmd_line_name(const CmdLine *self)
 {
     if (self != NULL && self->name != NULL)
     {
@@ -160,7 +160,7 @@ const char* cmd_line_name(const CmdLine* self)
     return _cmd_line_none;
 }
 
-const char* cmd_line_desc(const CmdLine* self)
+const char *cmd_line_desc(const CmdLine *self)
 {
     if (self != NULL && self->desc != NULL)
     {
@@ -170,7 +170,7 @@ const char* cmd_line_desc(const CmdLine* self)
     return _cmd_line_none;
 }
 
-void cmd_line_deinit(CmdLine* self)
+void cmd_line_deinit(CmdLine *self)
 {
     if (self == NULL)
     {

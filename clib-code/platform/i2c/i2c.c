@@ -10,19 +10,19 @@ static void _i2c_assert_mem_address(uint16_t mem_address, I2cMemAddressSize mem_
     }
 }
 
-static void _i2c_assert_transfer(uint8_t address, const void* data, size_t len)
+static void _i2c_assert_transfer(uint8_t address, const void *data, size_t len)
 {
     ASSERT(address <= I2C_ADDRESS_MAX);
     ASSERT(data != NULL || len == 0U);
 }
 
-static void _i2c_assert_mem_transfer(uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, const void* data, size_t len)
+static void _i2c_assert_mem_transfer(uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, const void *data, size_t len)
 {
     _i2c_assert_transfer(address, data, len);
     _i2c_assert_mem_address(mem_address, mem_address_size);
 }
 
-static void _i2c_assert_config(const I2cConfig* config)
+static void _i2c_assert_config(const I2cConfig *config)
 {
     ASSERT(config != NULL);
     ASSERT(config->clock_hz > 0U);
@@ -38,7 +38,7 @@ static I2cConfig _i2c_default_config(void)
     return config;
 }
 
-static void _i2c_assert_ops(const I2cOps* ops)
+static void _i2c_assert_ops(const I2cOps *ops)
 {
     ASSERT(ops != NULL);
     ASSERT(ops->config != NULL);
@@ -54,7 +54,7 @@ static void _i2c_assert_status(I2cStatus status)
     ASSERT(status >= I2C_STATUS_OK && status <= I2C_STATUS_OVERFLOW);
 }
 
-static void _i2c_assert_gpio_pin_config(const GpioConfig* config)
+static void _i2c_assert_gpio_pin_config(const GpioConfig *config)
 {
     ASSERT(config != NULL);
     ASSERT(config->mode >= GPIO_MODE_INPUT && config->mode <= GPIO_MODE_ANALOG);
@@ -65,7 +65,7 @@ static void _i2c_assert_gpio_pin_config(const GpioConfig* config)
     ASSERT(config->level >= GPIO_LEVEL_LOW && config->level <= GPIO_LEVEL_HIGH);
 }
 
-static void _i2c_assert_gpio_config(const I2cGpioConfig* gpio_cfg)
+static void _i2c_assert_gpio_config(const I2cGpioConfig *gpio_cfg)
 {
     if (gpio_cfg != NULL)
     {
@@ -75,13 +75,13 @@ static void _i2c_assert_gpio_config(const I2cGpioConfig* gpio_cfg)
     }
 }
 
-static void _i2c_assert_ready(const I2c* self)
+static void _i2c_assert_ready(const I2c *self)
 {
     ASSERT(self != NULL);
     _i2c_assert_ops(self->ops);
 }
 
-static void _i2c_clear(I2c* self)
+static void _i2c_clear(I2c *self)
 {
     self->ops = NULL;
     self->bus = 0U;
@@ -92,7 +92,7 @@ static void _i2c_clear(I2c* self)
     self->sda.pin = 0U;
 }
 
-static void _i2c_init_gpio(I2c* self, const I2cGpioConfig* gpio_cfg)
+static void _i2c_init_gpio(I2c *self, const I2cGpioConfig *gpio_cfg)
 {
     gpio_init(&self->scl, gpio_cfg->gpio_ops, gpio_cfg->scl_pin);
     gpio_config(&self->scl, &gpio_cfg->scl_config);
@@ -100,7 +100,7 @@ static void _i2c_init_gpio(I2c* self, const I2cGpioConfig* gpio_cfg)
     gpio_config(&self->sda, &gpio_cfg->sda_config);
 }
 
-static void _i2c_deinit_gpio(I2c* self)
+static void _i2c_deinit_gpio(I2c *self)
 {
     ASSERT(self != NULL);
 
@@ -119,7 +119,7 @@ static void _i2c_assert_probe(uint8_t address, size_t trials)
     ASSERT(trials > 0U);
 }
 
-static void _i2c_assert_scan(uint8_t* addresses, size_t capacity, const size_t* found_count)
+static void _i2c_assert_scan(uint8_t *addresses, size_t capacity, const size_t *found_count)
 {
     ASSERT(I2C_SCAN_ADDRESS_MIN <= I2C_SCAN_ADDRESS_MAX);
     ASSERT(I2C_SCAN_ADDRESS_MAX <= I2C_ADDRESS_MAX);
@@ -127,7 +127,7 @@ static void _i2c_assert_scan(uint8_t* addresses, size_t capacity, const size_t* 
     ASSERT(found_count != NULL);
 }
 
-static I2cStatus _i2c_config_checked(I2c* self, const I2cConfig* config)
+static I2cStatus _i2c_config_checked(I2c *self, const I2cConfig *config)
 {
     I2cStatus status;
 
@@ -142,7 +142,7 @@ static I2cStatus _i2c_config_checked(I2c* self, const I2cConfig* config)
     return status;
 }
 
-static I2cStatus _i2c_write_checked(I2c* self, uint8_t address, const uint8_t* data, size_t len, uint32_t timeout_ms)
+static I2cStatus _i2c_write_checked(I2c *self, uint8_t address, const uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     I2cStatus status;
 
@@ -152,7 +152,7 @@ static I2cStatus _i2c_write_checked(I2c* self, uint8_t address, const uint8_t* d
     return status;
 }
 
-static I2cStatus _i2c_read_checked(I2c* self, uint8_t address, uint8_t* data, size_t len, uint32_t timeout_ms)
+static I2cStatus _i2c_read_checked(I2c *self, uint8_t address, uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     I2cStatus status;
 
@@ -162,7 +162,7 @@ static I2cStatus _i2c_read_checked(I2c* self, uint8_t address, uint8_t* data, si
     return status;
 }
 
-static I2cStatus _i2c_mem_write_checked(I2c* self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, const uint8_t* data, size_t len, uint32_t timeout_ms)
+static I2cStatus _i2c_mem_write_checked(I2c *self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, const uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     I2cStatus status;
 
@@ -172,7 +172,7 @@ static I2cStatus _i2c_mem_write_checked(I2c* self, uint8_t address, uint16_t mem
     return status;
 }
 
-static I2cStatus _i2c_mem_read_checked(I2c* self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, uint8_t* data, size_t len, uint32_t timeout_ms)
+static I2cStatus _i2c_mem_read_checked(I2c *self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     I2cStatus status;
 
@@ -182,7 +182,7 @@ static I2cStatus _i2c_mem_read_checked(I2c* self, uint8_t address, uint16_t mem_
     return status;
 }
 
-static I2cStatus _i2c_is_device_ready_checked(I2c* self, uint8_t address, size_t trials, uint32_t timeout_ms)
+static I2cStatus _i2c_is_device_ready_checked(I2c *self, uint8_t address, size_t trials, uint32_t timeout_ms)
 {
     I2cStatus status;
     size_t i;
@@ -200,7 +200,7 @@ static I2cStatus _i2c_is_device_ready_checked(I2c* self, uint8_t address, size_t
     return status;
 }
 
-I2cStatus i2c_init(I2c* self, const I2cOps* ops, size_t bus, const I2cConfig* config, const I2cGpioConfig* gpio_cfg)
+I2cStatus i2c_init(I2c *self, const I2cOps *ops, size_t bus, const I2cConfig *config, const I2cGpioConfig *gpio_cfg)
 {
     I2cStatus status;
 
@@ -231,7 +231,7 @@ I2cStatus i2c_init(I2c* self, const I2cOps* ops, size_t bus, const I2cConfig* co
     return I2C_STATUS_OK;
 }
 
-I2cStatus i2c_config(I2c* self, const I2cConfig* config)
+I2cStatus i2c_config(I2c *self, const I2cConfig *config)
 {
     _i2c_assert_ready(self);
     _i2c_assert_config(config);
@@ -239,7 +239,7 @@ I2cStatus i2c_config(I2c* self, const I2cConfig* config)
     return _i2c_config_checked(self, config);
 }
 
-I2cStatus i2c_write(I2c* self, uint8_t address, const uint8_t* data, size_t len, uint32_t timeout_ms)
+I2cStatus i2c_write(I2c *self, uint8_t address, const uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     _i2c_assert_ready(self);
     _i2c_assert_transfer(address, data, len);
@@ -247,7 +247,7 @@ I2cStatus i2c_write(I2c* self, uint8_t address, const uint8_t* data, size_t len,
     return _i2c_write_checked(self, address, data, len, timeout_ms);
 }
 
-I2cStatus i2c_read(I2c* self, uint8_t address, uint8_t* data, size_t len, uint32_t timeout_ms)
+I2cStatus i2c_read(I2c *self, uint8_t address, uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     _i2c_assert_ready(self);
     _i2c_assert_transfer(address, data, len);
@@ -255,7 +255,7 @@ I2cStatus i2c_read(I2c* self, uint8_t address, uint8_t* data, size_t len, uint32
     return _i2c_read_checked(self, address, data, len, timeout_ms);
 }
 
-I2cStatus i2c_mem_write(I2c* self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, const uint8_t* data, size_t len, uint32_t timeout_ms)
+I2cStatus i2c_mem_write(I2c *self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, const uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     _i2c_assert_ready(self);
     _i2c_assert_mem_transfer(address, mem_address, mem_address_size, data, len);
@@ -263,7 +263,7 @@ I2cStatus i2c_mem_write(I2c* self, uint8_t address, uint16_t mem_address, I2cMem
     return _i2c_mem_write_checked(self, address, mem_address, mem_address_size, data, len, timeout_ms);
 }
 
-I2cStatus i2c_mem_read(I2c* self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, uint8_t* data, size_t len, uint32_t timeout_ms)
+I2cStatus i2c_mem_read(I2c *self, uint8_t address, uint16_t mem_address, I2cMemAddressSize mem_address_size, uint8_t *data, size_t len, uint32_t timeout_ms)
 {
     _i2c_assert_ready(self);
     _i2c_assert_mem_transfer(address, mem_address, mem_address_size, data, len);
@@ -271,7 +271,7 @@ I2cStatus i2c_mem_read(I2c* self, uint8_t address, uint16_t mem_address, I2cMemA
     return _i2c_mem_read_checked(self, address, mem_address, mem_address_size, data, len, timeout_ms);
 }
 
-I2cStatus i2c_is_device_ready(I2c* self, uint8_t address, size_t trials, uint32_t timeout_ms)
+I2cStatus i2c_is_device_ready(I2c *self, uint8_t address, size_t trials, uint32_t timeout_ms)
 {
     _i2c_assert_ready(self);
     _i2c_assert_probe(address, trials);
@@ -279,7 +279,7 @@ I2cStatus i2c_is_device_ready(I2c* self, uint8_t address, size_t trials, uint32_
     return _i2c_is_device_ready_checked(self, address, trials, timeout_ms);
 }
 
-I2cStatus i2c_scan(I2c* self, uint8_t* addresses, size_t capacity, size_t* found_count, uint32_t timeout_ms)
+I2cStatus i2c_scan(I2c *self, uint8_t *addresses, size_t capacity, size_t *found_count, uint32_t timeout_ms)
 {
     I2cStatus status;
     I2cStatus probe;
@@ -315,7 +315,7 @@ I2cStatus i2c_scan(I2c* self, uint8_t* addresses, size_t capacity, size_t* found
     return status;
 }
 
-void i2c_deinit(I2c* self)
+void i2c_deinit(I2c *self)
 {
     _i2c_assert_ready(self);
 

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _UNTIL_H_
+#define _UNTIL_H_
 
 #define min(a, b) ((a) < (b) ? (a) : (b))                                                                      // 比较小值
 #define max(a, b) ((a) > (b) ? (a) : (b))                                                                      // 比较大值                                                                     // 绝对值
@@ -91,4 +92,4 @@
 #define LIKELY(x)    (x)
 #define UNLIKELY(x)  (x)
 #endif
-
+#endif
