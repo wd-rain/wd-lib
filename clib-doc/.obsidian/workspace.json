@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "platform/i2c.md",
+                "file": "platform.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "i2c"
+              "title": "platform"
             }
           }
         ]
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "platform/i2c.md",
+                "file": "platform.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "i2c 的大纲"
+              "title": "platform 的大纲"
             }
           },
           {
@@ -197,8 +197,10 @@
   },
   "active": "2b32c93ddd528501",
   "lastOpenFiles": [
-    "platform/gpio.md",
+    "os/timer.md",
     "platform/i2c.md",
+    "platform/gpio.md",
+    "os.md",
     "platform.md",
     "cmdline.md",
     "until.md",

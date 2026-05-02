@@ -4,7 +4,8 @@ aliases:
   - platform layer
   - 平台层
 depends:
-  - "[[until]]"
+  - "[[gpio]]"
+  - "[[i2c]]"
 tags:
   - c
   - clib
@@ -17,12 +18,55 @@ tags:
 
 ## 依赖关系
 
-`[[platform]]` 依赖 `[[until]]` 提供的 `ASSERT`。平台模块遇到空指针、非法配置、缺失硬件操作函数时，优先用断言暴露编程错误。
+`clib-code/platform/platform.h` 是 platform 层的可裁剪聚合入口，默认包含 `gpio/gpio.h` 和 `i2c/i2c.h`。它本身不直接包含 `until.h`；`[[until]]` 由具体子模块按需要引入。
+
+`[[i2c]]` 当前依赖 `[[gpio]]` 中的类型，用于可选绑定 SCL/SDA 引脚生命周期。因此启用 `PLATFORM_USE_I2C` 时必须同时启用 `PLATFORM_USE_GPIO`。
 
 模块索引：
 
 - `[[gpio]]`：通用 GPIO platform 框架。
 - `[[i2c]]`：通用 I2C platform 框架。
+
+## 配置宏
+
+### `PLATFORM_USE_GPIO`
+
+控制 `platform.h` 是否包含 GPIO 抽象层。
+
+```c
+#ifndef PLATFORM_USE_GPIO
+#define PLATFORM_USE_GPIO 1
+#endif
+```
+
+默认值为 `1`，表示启用 `[[gpio]]`。如果项目不需要 GPIO，可以在包含 `platform.h` 前定义为 `0`：
+
+```c
+#define PLATFORM_USE_GPIO 0
+#define PLATFORM_USE_I2C 0
+#include "platform.h"
+```
+
+该宏只能设置为 `0` 或 `1`，其他值会触发编译错误。
+
+### `PLATFORM_USE_I2C`
+
+控制 `platform.h` 是否包含 I2C 抽象层。
+
+```c
+#ifndef PLATFORM_USE_I2C
+#define PLATFORM_USE_I2C 1
+#endif
+```
+
+默认值为 `1`，表示启用 `[[i2c]]`。如果项目不需要 I2C，可以在包含 `platform.h` 前定义为 `0`：
+
+```c
+#define PLATFORM_USE_I2C 0
+#include "platform.h"
+```
+
+该宏只能设置为 `0` 或 `1`。由于 `[[i2c]]` 依赖 `[[gpio]]`，不能设置 `PLATFORM_USE_I2C == 1` 且 `PLATFORM_USE_GPIO == 0`。
 
 ## 分层原则
 

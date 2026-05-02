@@ -11,6 +11,11 @@ static void _gpio_assert_config(const GpioConfig* config)
     ASSERT(config->level >= GPIO_LEVEL_LOW && config->level <= GPIO_LEVEL_HIGH);
 }
 
+static void _gpio_assert_level(GpioLevel level)
+{
+    ASSERT(level >= GPIO_LEVEL_LOW && level <= GPIO_LEVEL_HIGH);
+}
+
 static GpioConfig _gpio_default_config(void)
 {
     GpioConfig config = {
@@ -37,16 +42,18 @@ static void _gpio_assert_ops(const GpioOps* ops)
 static void _gpio_assert_ready(const Gpio* self)
 {
     ASSERT(self != NULL);
-    ASSERT(self->ops != NULL);
+    _gpio_assert_ops(self->ops);
 }
 
-static void _gpio_apply_config(Gpio* self)
+static void _gpio_apply_config_checked(Gpio* self)
 {
-    _gpio_assert_ready(self);
-    ASSERT(self->ops->config != NULL);
-    _gpio_assert_config(&self->config);
-
     self->ops->config(self->pin, &self->config);
+}
+
+static void _gpio_config_checked(Gpio* self, const GpioConfig* config)
+{
+    self->config = *config;
+    _gpio_apply_config_checked(self);
 }
 
 void gpio_init(Gpio* self, const GpioOps* ops, size_t pin)
@@ -57,7 +64,7 @@ void gpio_init(Gpio* self, const GpioOps* ops, size_t pin)
     self->ops = ops;
     self->pin = pin;
     self->config = _gpio_default_config();
-    _gpio_apply_config(self);
+    _gpio_apply_config_checked(self);
 }
 
 void gpio_config(Gpio* self, const GpioConfig* config)
@@ -65,65 +72,13 @@ void gpio_config(Gpio* self, const GpioConfig* config)
     _gpio_assert_ready(self);
     _gpio_assert_config(config);
 
-    self->config = *config;
-    _gpio_apply_config(self);
-}
-
-void gpio_set_pull(Gpio* self, GpioPull pull)
-{
-    GpioConfig config;
-
-    _gpio_assert_ready(self);
-    config = self->config;
-    config.pull = pull;
-    gpio_config(self, &config);
-}
-
-void gpio_set_mode(Gpio* self, GpioMode mode)
-{
-    GpioConfig config;
-
-    _gpio_assert_ready(self);
-    config = self->config;
-    config.mode = mode;
-    gpio_config(self, &config);
-}
-
-void gpio_set_speed(Gpio* self, GpioSpeed speed)
-{
-    GpioConfig config;
-
-    _gpio_assert_ready(self);
-    config = self->config;
-    config.speed = speed;
-    gpio_config(self, &config);
-}
-
-void gpio_set_output_type(Gpio* self, GpioOutputType output_type)
-{
-    GpioConfig config;
-
-    _gpio_assert_ready(self);
-    config = self->config;
-    config.output_type = output_type;
-    gpio_config(self, &config);
-}
-
-void gpio_set_alternate(Gpio* self, GpioAlternate alternate)
-{
-    GpioConfig config;
-
-    _gpio_assert_ready(self);
-    config = self->config;
-    config.alternate = alternate;
-    gpio_config(self, &config);
+    _gpio_config_checked(self, config);
 }
 
 void gpio_write(Gpio* self, GpioLevel level)
 {
     _gpio_assert_ready(self);
-    ASSERT(self->ops->write != NULL);
-    ASSERT(level >= GPIO_LEVEL_LOW && level <= GPIO_LEVEL_HIGH);
+    _gpio_assert_level(level);
 
     self->config.level = level;
     self->ops->write(self->pin, level);
@@ -134,10 +89,9 @@ GpioLevel gpio_read(Gpio* self)
     GpioLevel level;
 
     _gpio_assert_ready(self);
-    ASSERT(self->ops->read != NULL);
 
     level = self->ops->read(self->pin);
-    ASSERT(level >= GPIO_LEVEL_LOW && level <= GPIO_LEVEL_HIGH);
+    _gpio_assert_level(level);
     self->config.level = level;
 
     return level;
@@ -158,7 +112,7 @@ void gpio_deinit(Gpio* self)
 
     config = _gpio_default_config();
     self->config = config;
-    _gpio_apply_config(self);
+    _gpio_apply_config_checked(self);
 
     self->ops = NULL;
     self->pin = 0U;

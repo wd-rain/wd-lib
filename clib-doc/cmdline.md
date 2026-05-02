@@ -3,6 +3,7 @@ aliases:
   - cmdline
   - cmdline.h
   - C 命令行解析
+depends: []
 tags:
   - c
   - clib
@@ -15,6 +16,10 @@ tags:
 `cmdline` 提供一个轻量级 C 命令行解析器，用于将一行可写字符串解析成 `argc / argv` 形式，并在命令名匹配时调用用户注册的回调函数。当前实现不进行堆内存分配，解析过程会原地修改传入的 `line` 缓冲区。
 
 本文只说明 `cmdline` 本身提供的接口，所有接口都使用独立标题，方便在 Obsidian 大纲中快速定位。
+
+## 依赖关系
+
+`cmdline` 不依赖其他 clib 模块。实现文件只额外使用标准头文件 `<stddef.h>`。
 
 ## 接口总览
 
@@ -330,7 +335,7 @@ get speed 100
 ## 完整示例
 
 ```c
-#include "clib-code/cmdline/cmdline.h"
+#include "clib-code/tool/cmdline/cmdline.h"
 
 #include <stdio.h>
 
@@ -366,7 +371,7 @@ int main(void)
 编译：
 
 ```powershell
-gcc -std=c99 -Wall -Wextra -g -O0 example.c clib-code\cmdline\cmdline.c -o example.exe
+gcc -std=c99 -Wall -Wextra -g -O0 example.c clib-code\tool\cmdline\cmdline.c -o example.exe
 ```
 
 输出：
@@ -385,7 +390,7 @@ argv[2]=hello world
 当前仓库未保留独立测试文件。可以先执行语法检查确认接口声明和实现一致：
 
 ```powershell
-gcc -std=c99 -Wall -Wextra -pedantic -fsyntax-only clib-code\cmdline\cmdline.c
+gcc -std=c99 -Wall -Wextra -pedantic -fsyntax-only clib-code\tool\cmdline\cmdline.c
 ```
 
 如需手动验证返回值，可以编写一个回调返回固定值的示例：

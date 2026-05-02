@@ -5,9 +5,7 @@ aliases:
   - platform/i2c
   - I2C 平台层
 depends:
-  - "[[platform]]"
   - "[[gpio]]"
-  - "[[until]]"
 tags:
   - c
   - clib
@@ -25,9 +23,9 @@ tags:
 
 ## 依赖关系
 
-`[[i2c]] -> [[platform]] -> [[gpio]] -> [[until]]`
+`[[i2c]] -> [[gpio]] -> [[until]]`
 
-`i2c` 属于 `[[platform]]` 模块，并依赖 `[[until]]` 中的 `ASSERT` 做空指针、缺失 ops、非法地址和非法配置检查。`i2c` 还依赖 `[[gpio]]`，用于可选绑定 SCL/SDA 引脚生命周期。
+`i2c` 位于 `[[platform]]` 层目录下，但源码不依赖 `platform.h`。它直接依赖 `[[gpio]]`，用于可选绑定 SCL/SDA 引脚生命周期；`[[until]]` 由 `gpio` 间接引入，其中的 `ASSERT` 用于空指针、缺失 ops、非法地址和非法配置检查。
 
 和 `[[gpio]]` 不同，I2C 的 NACK、超时、总线忙等情况属于正常运行期结果，因此通过 `I2cStatus` 返回；空对象、空 `ops`、缺失函数指针、非法地址和非法枚举值仍属于编程错误，会触发 `ASSERT`。
 

@@ -5,7 +5,6 @@ aliases:
   - platform/gpio
   - GPIO 平台层
 depends:
-  - "[[platform]]"
   - "[[until]]"
 tags:
   - c
@@ -22,9 +21,9 @@ tags:
 
 ## 依赖关系
 
-`[[gpio]] -> [[platform]] -> [[until]]`
+`[[gpio]] -> [[until]]`
 
-`gpio` 属于 `[[platform]]` 模块，并依赖 `[[until]]` 中的 `ASSERT` 做空指针、缺失 ops 和非法枚举值检查。
+`gpio` 位于 `[[platform]]` 层目录下，但源码不依赖 `platform.h`。它直接依赖 `[[until]]` 中的 `ASSERT`，用于空指针、缺失 ops 和非法枚举值检查。
 
 ## 接口总览
 
@@ -45,11 +44,6 @@ tags:
 | 类型 | `Gpio` | GPIO 对象 | 保存 ops、pin 和当前配置缓存 |
 | 初始化 | `gpio_init(self, ops, pin)` | 初始化 GPIO 对象 | 会配置为默认悬空输入 |
 | 配置 | `gpio_config(self, config)` | 整体更新 GPIO 配置 | 调用 `ops->config` |
-| 配置 | `gpio_set_pull(self, pull)` | 更新上下拉 | 保留其他配置字段 |
-| 配置 | `gpio_set_mode(self, mode)` | 更新模式 | 保留其他配置字段 |
-| 配置 | `gpio_set_speed(self, speed)` | 更新速度 | 保留其他配置字段 |
-| 配置 | `gpio_set_output_type(self, output_type)` | 更新输出类型 | 保留其他配置字段 |
-| 配置 | `gpio_set_alternate(self, alternate)` | 更新复用功能 | 保留其他配置字段 |
 | 读写 | `gpio_write(self, level)` | 写 GPIO 电平 | 调用 `ops->write` 并更新缓存电平 |
 | 读写 | `gpio_read(self)` | 读 GPIO 电平 | 调用 `ops->read` 并更新缓存电平 |
 | 读写 | `gpio_toggle(self)` | 翻转 GPIO 电平 | 由 `gpio_read` 和 `gpio_write` 实现 |
@@ -398,55 +392,6 @@ gpio_config(&led, &config);
 
 `self`、`self->ops`、`self->ops->config` 和 `config` 必须有效。`config` 中的枚举值必须属于 `gpio.h` 定义的范围，否则触发 `ASSERT`。
 
-### `gpio_set_pull(self, pull)`
-
-更新上下拉配置。
-
-```c
-void gpio_set_pull(Gpio* self, GpioPull pull);
-```
-
-该函数保留其他配置字段，只修改 `pull`，然后调用 `gpio_config`。
-
-### `gpio_set_mode(self, mode)`
-
-更新 GPIO 模式。
-
-```c
-void gpio_set_mode(Gpio* self, GpioMode mode);
-```
-
-该函数保留其他配置字段，只修改 `mode`，然后调用 `gpio_config`。
-
-### `gpio_set_speed(self, speed)`
-
-更新 GPIO 速度。
-
-```c
-void gpio_set_speed(Gpio* self, GpioSpeed speed);
-```
-
-该函数保留其他配置字段，只修改 `speed`，然后调用 `gpio_config`。
-
-### `gpio_set_output_type(self, output_type)`
-
-更新输出类型。
-
-```c
-void gpio_set_output_type(Gpio* self, GpioOutputType output_type);
-```
-
-该函数保留其他配置字段，只修改 `output_type`，然后调用 `gpio_config`。
-
-### `gpio_set_alternate(self, alternate)`
-
-更新复用功能。
-
-```c
-void gpio_set_alternate(Gpio* self, GpioAlternate alternate);
-```
-
-该函数保留其他配置字段，只修改 `alternate`，然后调用 `gpio_config`。
 
 ## 读写接口
 
