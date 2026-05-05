@@ -70,6 +70,10 @@ coverage/
 *.swo
 *~
 
+# Keil uVision generated files
+*.uvguix.*
+*.build_log.htm
+
 # OS generated files
 .DS_Store
 Thumbs.db
