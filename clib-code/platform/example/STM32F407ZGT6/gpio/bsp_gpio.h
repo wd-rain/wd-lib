@@ -7,7 +7,9 @@
 #include "platform/gpio/gpio.h"
 
 // Config
-#define BSP_GPIO_PIN(port, pin) ((((size_t)(port)) << 8U) | (size_t)(pin))
+#define BSP_GPIO_PIN_PORT_SHIFT 8U
+#define BSP_GPIO_PIN_INDEX_MASK 0xFFU
+#define BSP_GPIO_PIN(port, pin) ((((size_t)(port)) << BSP_GPIO_PIN_PORT_SHIFT) | ((size_t)(pin) & BSP_GPIO_PIN_INDEX_MASK))
 
 #define BSP_GPIO_PIN_PA0 BSP_GPIO_PIN(WD_BSP_GPIO_PORT_A, 0U)
 #define BSP_GPIO_PIN_PA1 BSP_GPIO_PIN(WD_BSP_GPIO_PORT_A, 1U)
@@ -145,6 +147,8 @@
 #define BSP_GPIO_PIN_PI11 BSP_GPIO_PIN(WD_BSP_GPIO_PORT_I, 11U)
 
 // Types
+typedef size_t BspGpioPin;
+
 typedef enum bsp_gpio_port_t
 {
     WD_BSP_GPIO_PORT_A = 0,
@@ -160,5 +164,11 @@ typedef enum bsp_gpio_port_t
 
 // Interface
 const GpioOps *bsp_gpio_ops(void);
+BspGpioPort bsp_gpio_pin_port(BspGpioPin pin);
+size_t bsp_gpio_pin_index(BspGpioPin pin);
+GpioConfig bsp_gpio_input_config(GpioPull pull);
+GpioConfig bsp_gpio_output_config(GpioOutputType output_type, GpioSpeed speed, GpioLevel level);
+GpioConfig bsp_gpio_alternate_config(GpioAlternate alternate, GpioPull pull, GpioSpeed speed, GpioOutputType output_type, GpioLevel level);
+GpioConfig bsp_gpio_analog_config(void);
 
 #endif

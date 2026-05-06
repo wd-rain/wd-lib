@@ -25,6 +25,8 @@ tags:
 
 `gpio` 位于 `[[platform]]` 层目录下，但源码不依赖 `platform.h`。它直接依赖 `[[until]]` 中的 `ASSERT`，用于空指针、缺失 ops 和非法枚举值检查。
 
+GPIO 中断能力不放入 `GpioOps`，由独立的 `[[gpio_isr]]` 模块提供。普通 GPIO 读写和 GPIO 中断对象可以组合使用，但二者边界保持独立。
+
 ## 接口总览
 
 | 类别  | 接口                          | 基本功能           | 使用要点                                                                      |
@@ -611,3 +613,27 @@ gcc -std=c99 -Wall -Wextra -pedantic -fsyntax-only clib-code\platform\gpio\gpio.
 - `gpio_write` 会更新缓存电平，但不会重新调用 `ops->config`。
 - `gpio_read` 会把平台返回的电平写回 `self->config.level`。
 - `gpio_deinit` 后对象不再有效，继续使用会触发断言。
+
+## GPIO ISR 扩展
+
+GPIO 中断能力不放入 `GpioOps`。普通 GPIO 仍由 `Gpio + GpioOps` 负责配置、读、写；中断能力由独立的 `[[gpio_isr]]` 模块提供。
+
+当前推荐边界：
+
+```text
+Gpio      -> 普通 GPIO config/write/read
+GpioIsr   -> GPIO 中断触发配置、pending、ack、callback
+Isr       -> pending -> ack -> action 公共流程
+App       -> callback 中决定 direct/flag/event/queue
+```
+
+真实中断入口示例：
+
+```c
+void EXTI3_IRQHandler(void)
+{
+    isr_handle(gpio_isr_base(&button_isr));
+}
+```
+
+`GpioIsr` 对象只保存 `Isr isr`、`Gpio *gpio`、`const GpioIsrOps *ops` 和 `gpio_isr_callback_fn callback`。它不缓存 `level`、`timestamp` 或 `config`；如果 callback 需要当前电平，应在 callback 中通过 `gpio_read(self->gpio)` 读取。

@@ -1,6 +1,11 @@
 #include "stm32f4xx_hal.h"
 #include "bsp_gpio.h"
 
+static void _bsp_gpio_assert_port(BspGpioPort port)
+{
+    ASSERT(port <= WD_BSP_GPIO_PORT_I);
+}
+
 static GPIO_TypeDef *_bsp_gpio_port(size_t pin)
 {
     GPIO_TypeDef *ports[] = {
@@ -14,61 +19,75 @@ static GPIO_TypeDef *_bsp_gpio_port(size_t pin)
         GPIOH,
         GPIOI
     };
-    size_t port_index;
+    BspGpioPort port;
 
-    port_index = (pin >> 8U) & 0xFFU;
-    ASSERT(port_index < (sizeof(ports) / sizeof(ports[0])));
+    port = bsp_gpio_pin_port(pin);
+    _bsp_gpio_assert_port(port);
+    ASSERT((size_t)port < (sizeof(ports) / sizeof(ports[0])));
 
-    return ports[port_index];
+    return ports[port];
 }
 
 static uint16_t _bsp_gpio_pin_mask(size_t pin)
 {
     size_t pin_index;
 
-    pin_index = pin & 0xFFU;
-    ASSERT(pin_index <= 15U);
+    pin_index = bsp_gpio_pin_index(pin);
 
     return (uint16_t)(1U << pin_index);
 }
 
 static void _bsp_gpio_enable_clock(size_t pin)
 {
-    size_t port_index;
+    BspGpioPort port;
 
-    port_index = (pin >> 8U) & 0xFFU;
-    switch (port_index)
+    port = bsp_gpio_pin_port(pin);
+    switch (port)
     {
-    case 0U:
+    case WD_BSP_GPIO_PORT_A:
         __HAL_RCC_GPIOA_CLK_ENABLE();
         break;
-    case 1U:
+    case WD_BSP_GPIO_PORT_B:
         __HAL_RCC_GPIOB_CLK_ENABLE();
         break;
-    case 2U:
+    case WD_BSP_GPIO_PORT_C:
         __HAL_RCC_GPIOC_CLK_ENABLE();
         break;
-    case 3U:
+    case WD_BSP_GPIO_PORT_D:
         __HAL_RCC_GPIOD_CLK_ENABLE();
         break;
-    case 4U:
+    case WD_BSP_GPIO_PORT_E:
         __HAL_RCC_GPIOE_CLK_ENABLE();
         break;
-    case 5U:
+    case WD_BSP_GPIO_PORT_F:
         __HAL_RCC_GPIOF_CLK_ENABLE();
         break;
-    case 6U:
+    case WD_BSP_GPIO_PORT_G:
         __HAL_RCC_GPIOG_CLK_ENABLE();
         break;
-    case 7U:
+    case WD_BSP_GPIO_PORT_H:
         __HAL_RCC_GPIOH_CLK_ENABLE();
         break;
-    case 8U:
+    case WD_BSP_GPIO_PORT_I:
         __HAL_RCC_GPIOI_CLK_ENABLE();
         break;
     default:
         ASSERT(0);
     }
+}
+
+static GpioConfig _bsp_gpio_base_config(void)
+{
+    GpioConfig config = {
+        WD_GPIO_MODE_INPUT,
+        WD_GPIO_PULL_NONE,
+        WD_GPIO_SPEED_LOW,
+        WD_GPIO_OUTPUT_PUSH_PULL,
+        WD_GPIO_ALTERNATE_NONE,
+        WD_GPIO_LEVEL_LOW
+    };
+
+    return config;
 }
 
 static uint32_t _bsp_gpio_hal_mode(const GpioConfig *config)
@@ -175,4 +194,73 @@ const GpioOps *bsp_gpio_ops(void)
     };
 
     return &ops;
+}
+
+BspGpioPort bsp_gpio_pin_port(BspGpioPin pin)
+{
+    BspGpioPort port;
+
+    port = (BspGpioPort)((pin >> BSP_GPIO_PIN_PORT_SHIFT) & BSP_GPIO_PIN_INDEX_MASK);
+    _bsp_gpio_assert_port(port);
+
+    return port;
+}
+
+size_t bsp_gpio_pin_index(BspGpioPin pin)
+{
+    size_t index;
+
+    index = pin & BSP_GPIO_PIN_INDEX_MASK;
+    ASSERT(index <= 15U);
+
+    return index;
+}
+
+GpioConfig bsp_gpio_input_config(GpioPull pull)
+{
+    GpioConfig config;
+
+    config = _bsp_gpio_base_config();
+    config.mode = WD_GPIO_MODE_INPUT;
+    config.pull = pull;
+
+    return config;
+}
+
+GpioConfig bsp_gpio_output_config(GpioOutputType output_type, GpioSpeed speed, GpioLevel level)
+{
+    GpioConfig config;
+
+    config = _bsp_gpio_base_config();
+    config.mode = WD_GPIO_MODE_OUTPUT;
+    config.speed = speed;
+    config.output_type = output_type;
+    config.level = level;
+
+    return config;
+}
+
+GpioConfig bsp_gpio_alternate_config(GpioAlternate alternate, GpioPull pull, GpioSpeed speed, GpioOutputType output_type, GpioLevel level)
+{
+    GpioConfig config;
+
+    config = _bsp_gpio_base_config();
+    config.mode = WD_GPIO_MODE_ALTERNATE;
+    config.pull = pull;
+    config.speed = speed;
+    config.output_type = output_type;
+    config.alternate = alternate;
+    config.level = level;
+
+    return config;
+}
+
+GpioConfig bsp_gpio_analog_config(void)
+{
+    GpioConfig config;
+
+    config = _bsp_gpio_base_config();
+    config.mode = WD_GPIO_MODE_ANALOG;
+
+    return config;
 }

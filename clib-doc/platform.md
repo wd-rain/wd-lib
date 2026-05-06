@@ -4,7 +4,9 @@ aliases:
   - platform layer
   - 平台层
 depends:
+  - "[[isr]]"
   - "[[gpio]]"
+  - "[[gpio_isr]]"
   - "[[i2c]]"
 tags:
   - c
@@ -18,13 +20,17 @@ tags:
 
 ## 依赖关系
 
-`clib-code/platform/platform.h` 是 platform 层的可裁剪聚合入口，默认包含 `gpio/gpio.h` 和 `i2c/i2c.h`。它本身不直接包含 `until.h`；`[[until]]` 由具体子模块按需要引入。
+`clib-code/platform/platform.h` 是 platform 层的可裁剪聚合入口，默认包含 `isr/isr.h`、`gpio/gpio.h`、`gpio/gpio_isr.h` 和 `i2c/i2c.h`。它本身不直接包含 `until.h`；`[[until]]` 由具体子模块按需要引入。
 
 `[[i2c]]` 当前依赖 `[[gpio]]` 中的类型，用于可选绑定 SCL/SDA 引脚生命周期。因此启用 `PLATFORM_USE_I2C` 时必须同时启用 `PLATFORM_USE_GPIO`。
 
+`[[gpio_isr]]` 当前依赖 `[[gpio]]` 和 `[[isr]]`。启用 `PLATFORM_USE_GPIO_ISR` 时必须同时启用 `PLATFORM_USE_GPIO` 和 `PLATFORM_USE_ISR`。
+
 模块索引：
 
+- `[[isr]]`：通用 ISR 基类，固定 `pending -> ack -> action` 公共流程。
 - `[[gpio]]`：通用 GPIO platform 框架。
+- `[[gpio_isr]]`：GPIO 中断扩展，`GpioIsr` 内嵌 `Isr`，真实 `IRQHandler` 调用 `isr_handle(gpio_isr_base(...))`。
 - `[[i2c]]`：通用 I2C platform 框架。
 
 ## 配置宏
@@ -67,6 +73,45 @@ tags:
 ```
 
 该宏只能设置为 `0` 或 `1`。由于 `[[i2c]]` 依赖 `[[gpio]]`，不能设置 `PLATFORM_USE_I2C == 1` 且 `PLATFORM_USE_GPIO == 0`。
+
+### `PLATFORM_USE_GPIO_ISR`
+
+控制 `platform.h` 是否包含 GPIO 中断扩展。
+
+```c
+#ifndef PLATFORM_USE_GPIO_ISR
+#define PLATFORM_USE_GPIO_ISR PLATFORM_USE_GPIO
+#endif
+```
+
+默认值跟随 `PLATFORM_USE_GPIO`。如果项目需要普通 GPIO 但不需要 GPIO 中断，可以在包含 `platform.h` 前定义为 `0`：
+
+```c
+#define PLATFORM_USE_GPIO_ISR 0
+#include "platform.h"
+```
+
+该宏只能设置为 `0` 或 `1`。由于 `[[gpio_isr]]` 同时依赖 `[[gpio]]` 和 `[[isr]]`，不能设置 `PLATFORM_USE_GPIO_ISR == 1` 且 `PLATFORM_USE_GPIO == 0` 或 `PLATFORM_USE_ISR == 0`。
+
+### `PLATFORM_USE_ISR`
+
+控制 `platform.h` 是否包含通用 ISR 基类。
+
+```c
+#ifndef PLATFORM_USE_ISR
+#define PLATFORM_USE_ISR PLATFORM_USE_GPIO_ISR
+#endif
+```
+
+默认值跟随 `PLATFORM_USE_GPIO_ISR`。如果项目后续有非 GPIO 外设也需要共用 `Isr` 基类，可以单独启用：
+
+```c
+#define PLATFORM_USE_ISR 1
+#define PLATFORM_USE_GPIO_ISR 0
+#include "platform.h"
+```
+
+该宏只能设置为 `0` 或 `1`。
 
 ## 分层原则
 
