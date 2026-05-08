@@ -39,8 +39,6 @@ static void _gpio_isr_action(Isr *isr)
 {
     GpioIsr *self;
 
-    WD_ASSERT(isr != NULL);
-
     self = WD_CONTAINER_OF(isr, GpioIsr, isr);
 
     if (self->callback != NULL)

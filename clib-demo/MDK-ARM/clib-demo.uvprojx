@@ -481,6 +481,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>clib-code/tool</GroupName>
+          <Files>
+            <File>
+              <FileName>rb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../clib-code/tool/rb/rb.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Drivers/STM32F4xx_HAL_Driver</GroupName>
           <Files>
             <File>

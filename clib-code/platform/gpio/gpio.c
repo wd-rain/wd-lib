@@ -27,7 +27,6 @@ static GpioConfig _gpio_default_config(void)
         GPIO_DEFAULT_LEVEL
     };
 
-    _gpio_assert_config(&config);
     return config;
 }
 
@@ -98,7 +97,6 @@ GpioLevel gpio_read(Gpio *self)
     _gpio_assert_ready(self);
 
     level = self->ops->read(self->pin);
-    _gpio_assert_level(level);
     self->config.level = level;
 
     return level;
@@ -106,8 +104,11 @@ GpioLevel gpio_read(Gpio *self)
 
 void gpio_toggle(Gpio *self)
 {
-    GpioLevel level = gpio_read(self);
+    GpioLevel level;
 
+    _gpio_assert_ready(self);
+
+    level = gpio_read(self);
     gpio_write(self, level == WD_GPIO_LEVEL_LOW ? WD_GPIO_LEVEL_HIGH : WD_GPIO_LEVEL_LOW);
 }
 

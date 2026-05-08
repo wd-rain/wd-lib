@@ -106,12 +106,6 @@ static void _timer_assert_id(TimerId id)
     WD_ASSERT(id != TIMER_ID_INVALID);
 }
 
-static Timer *_timer_find_checked(TimerScheduler *self, TimerId id)
-{
-    _timer_assert_id(id);
-    return _timer_find(self, id);
-}
-
 static void _timer_assert_start_args(TimerId id, TimerTick delay_ticks, TimerTick period_ticks, timer_action_fn action)
 {
     _timer_assert_id(id);
@@ -331,13 +325,13 @@ int timer_delete(TimerScheduler *self, TimerId id)
     int result;
 
     _timer_assert_ready(self);
+    _timer_assert_id(id);
 
     result = -1;
 
-    timer = _timer_find_checked(self, id);
+    timer = _timer_find(self, id);
     if (timer != NULL)
     {
-        // 将timer从active list中移除（如果在active list中）并清空timer数据
         (void)_timer_stop_active(self, timer);
         _timer_clear(timer);
         result = 0;
@@ -382,10 +376,11 @@ int timer_stop(TimerScheduler *self, TimerId id)
     int result;
 
     _timer_assert_ready(self);
+    _timer_assert_id(id);
 
     result = -1;
 
-    timer = _timer_find_checked(self, id);
+    timer = _timer_find(self, id);
     if (timer != NULL)
     {
         result = _timer_stop_active(self, timer);
@@ -400,10 +395,11 @@ int timer_is_running(TimerScheduler *self, TimerId id)
     int result;
 
     _timer_assert_ready(self);
+    _timer_assert_id(id);
 
     result = -1;
 
-    timer = _timer_find_checked(self, id);
+    timer = _timer_find(self, id);
     if (timer != NULL)
     {
         result = _timer_is_active(self, timer) ? 1 : 0;
@@ -419,10 +415,11 @@ int timer_remaining(TimerScheduler *self, TimerId id)
     int result;
 
     _timer_assert_ready(self);
+    _timer_assert_id(id);
 
     result = -1;
 
-    timer = _timer_find_checked(self, id);
+    timer = _timer_find(self, id);
     if (timer != NULL)
     {
         if (_timer_is_active(self, timer))

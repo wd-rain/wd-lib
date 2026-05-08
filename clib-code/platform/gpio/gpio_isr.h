@@ -3,11 +3,11 @@
 
 #include <stddef.h>
 
-// Dependencies
+// 依赖
 #include "gpio.h"
 #include "../isr/isr.h"
 
-// Types
+// 类型定义
 typedef enum gpio_isr_trigger_t
 {
     WD_GPIO_ISR_RISING = 0,
@@ -40,7 +40,7 @@ struct gpio_isr_t
     gpio_isr_callback_fn callback;
 };
 
-// Interface
+// 接口
 void gpio_isr_init(GpioIsr *self, Gpio *gpio, const GpioIsrOps *ops, const GpioIsrConfig *config, gpio_isr_callback_fn callback);
 void gpio_isr_config(GpioIsr *self, const GpioIsrConfig *config);
 Isr *gpio_isr_base(GpioIsr *self);

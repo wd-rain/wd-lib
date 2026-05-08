@@ -34,7 +34,6 @@ static I2cConfig _i2c_default_config(void)
         I2C_DEFAULT_CLOCK_HZ
     };
 
-    _i2c_assert_config(&config);
     return config;
 }
 
@@ -47,11 +46,6 @@ static void _i2c_assert_ops(const I2cOps *ops)
     WD_ASSERT(ops->mem_write != NULL);
     WD_ASSERT(ops->mem_read != NULL);
     WD_ASSERT(ops->deinit != NULL);
-}
-
-static void _i2c_assert_status(I2cStatus status)
-{
-    WD_ASSERT(status <= WD_I2C_STATUS_OVERFLOW);
 }
 
 static void _i2c_assert_gpio_pin_config(const GpioConfig *config)
@@ -102,12 +96,8 @@ static void _i2c_init_gpio(I2c *self, const I2cGpioConfig *gpio_cfg)
 
 static void _i2c_deinit_gpio(I2c *self)
 {
-    WD_ASSERT(self != NULL);
-
-    if (self->scl.ops != NULL || self->sda.ops != NULL)
+    if (self->scl.ops != NULL && self->sda.ops != NULL)
     {
-        WD_ASSERT(self->scl.ops != NULL);
-        WD_ASSERT(self->sda.ops != NULL);
         gpio_deinit(&self->scl);
         gpio_deinit(&self->sda);
     }
@@ -132,7 +122,6 @@ static I2cStatus _i2c_config_checked(I2c *self, const I2cConfig *config)
     I2cStatus status;
 
     status = self->ops->config(self->bus, config);
-    _i2c_assert_status(status);
 
     if (status == WD_I2C_STATUS_OK)
     {
@@ -147,7 +136,6 @@ static I2cStatus _i2c_write_checked(I2c *self, uint8_t address, const uint8_t *d
     I2cStatus status;
 
     status = self->ops->write(self->bus, address, data, len, timeout_ms);
-    _i2c_assert_status(status);
 
     return status;
 }
@@ -157,7 +145,6 @@ static I2cStatus _i2c_read_checked(I2c *self, uint8_t address, uint8_t *data, si
     I2cStatus status;
 
     status = self->ops->read(self->bus, address, data, len, timeout_ms);
-    _i2c_assert_status(status);
 
     return status;
 }
@@ -167,7 +154,6 @@ static I2cStatus _i2c_mem_write_checked(I2c *self, uint8_t address, uint16_t mem
     I2cStatus status;
 
     status = self->ops->mem_write(self->bus, address, mem_address, mem_address_size, data, len, timeout_ms);
-    _i2c_assert_status(status);
 
     return status;
 }
@@ -177,7 +163,6 @@ static I2cStatus _i2c_mem_read_checked(I2c *self, uint8_t address, uint16_t mem_
     I2cStatus status;
 
     status = self->ops->mem_read(self->bus, address, mem_address, mem_address_size, data, len, timeout_ms);
-    _i2c_assert_status(status);
 
     return status;
 }

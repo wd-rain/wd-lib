@@ -4,10 +4,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-// Dependencies
+// 依赖
 #include "../../until/until.h"
 
-// Types
+// 类型定义
 typedef struct isr_t Isr;
 
 typedef void (*isr_enable_fn)(size_t source);
@@ -31,7 +31,7 @@ struct isr_t
     isr_action_fn action;
 };
 
-// Interface
+// 接口
 void isr_init(Isr *self, const IsrOps *ops, size_t source, isr_action_fn action);
 void isr_enable(Isr *self);
 void isr_disable(Isr *self);
