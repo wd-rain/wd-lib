@@ -525,6 +525,18 @@ static int _event_dispatch_checked(EventScheduler *self, const Event *event)
     return count;
 }
 
+static int _event_trigger_checked(EventScheduler *self, EventId event_id, EventSource source, uint32_t value, void *user_data)
+{
+    Event event;
+
+    event.id = event_id;
+    event.source = source;
+    event.value = value;
+    event.user_data = user_data;
+
+    return _event_dispatch_checked(self, &event);
+}
+
 static int _event_dispatch_next_checked(EventScheduler *self)
 {
     Event event;
@@ -635,11 +647,8 @@ static void _event_timer_action(TimerScheduler *timer_scheduler, TimerId id, voi
     event_timer = (EventTimer *)user_data;
     scheduler = event_timer->scheduler;
 
-    // 周期任务到期产生一次 timer 来源的 post，post 池满时把失败带回 run_once。
-    if (_event_post_checked(scheduler, event_timer->event_id, WD_EVENT_SOURCE_TIMER, 0U, event_timer->value, event_timer->user_data) != 0)
-    {
-        scheduler->internal_error = -1;
-    }
+    // 周期任务到期时同步触发 handler，不占用 pending post 槽位。
+    (void)_event_trigger_checked(scheduler, event_timer->event_id, WD_EVENT_SOURCE_TIMER, event_timer->value, event_timer->user_data);
 }
 
 static void _event_monitor_timer_action(TimerScheduler *timer_scheduler, TimerId id, void *user_data)
@@ -864,7 +873,7 @@ int event_scheduler_run_once(EventScheduler *self)
     }
 
     self->internal_error = 0;
-    // timer 回调只能通过 internal_error 把 post 池满等失败带回这个公开接口。
+    // timer 回调只能通过 internal_error 把 monitor/post 失败带回这个公开接口。
     (void)timer_scheduler_run_once(&self->timer);
     if (self->internal_error != 0)
     {
@@ -969,18 +978,11 @@ uint32_t event_is_posted(EventScheduler *self, EventId event_id)
 
 int event_trigger(EventScheduler *self, EventId event_id, uint32_t value, void *user_data)
 {
-    Event event;
-
     _event_assert_ready(self);
     _event_assert_allocated_event(self, event_id);
 
-    event.id = event_id;
-    event.source = WD_EVENT_SOURCE_EXTERNAL;
-    event.value = value;
-    event.user_data = user_data;
-
     // trigger 是同步接口：绕过 pending post，当前调用栈内立即匹配并执行 handler。
-    return _event_dispatch_checked(self, &event);
+    return _event_trigger_checked(self, event_id, WD_EVENT_SOURCE_EXTERNAL, value, user_data);
 }
 
 EventTimerId event_timer_add(EventScheduler *self, EventId event_id, TimerTick period_ticks, uint32_t value, void *user_data)

@@ -33,11 +33,11 @@ tags:
 
 `event` 保留自己的配置命名空间，同时允许上层通过 event 的配置影响内部 timer：
 
-| 配置                        | 作用                                    |
-| ------------------------- | ------------------------------------- |
-| `EVENT_QUEUE_SIZE`        | pending post 池容量，同一个 `EventId` 最多占用一个槽位 |
-| `EVENT_HANDLER_POOL_SIZE` | handler 注册池容量                         |
-| `EVENT_MONITOR_POOL_SIZE` | monitor 注册池容量                         |
+| 配置                        | 作用                                                                      |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `EVENT_QUEUE_SIZE`        | pending post 池容量，同一个 `EventId` 最多占用一个槽位                                 |
+| `EVENT_HANDLER_POOL_SIZE` | handler 注册池容量                                                           |
+| `EVENT_MONITOR_POOL_SIZE` | monitor 注册池容量                                                           |
 | `EVENT_TIMER_POOL_SIZE`   | event 内部 `TimerScheduler` 的 timer 池容量，用于延时 post、event timer 和周期 monitor |
 
 配置覆盖规则：
@@ -191,7 +191,7 @@ int event_scheduler_run_once(EventScheduler *self);
 非阻塞推进一次事件调度。推荐顺序：
 
 1. 检查一个或一组 `period_ticks == 0U` 的 monitor，并把满足条件的 `EventId` 写入 pending post 池。
-2. 调用内部 `timer_scheduler_run_once`，把到期的延时 post 切换为 ready，或由 event timer/周期 monitor 生成一次 pending post。
+2. 调用内部 `timer_scheduler_run_once`，把到期的延时 post 切换为 ready；event timer 到期时同步 trigger 目标事件；周期 monitor 到期时检查并可能生成一次 pending post。
 3. 从 pending post 池取出一个 ready 事件，并按 `event.id` 分发给匹配 handler。
 
 每次调用至少推进一个小步，避免在 monitor 或 handler 很多时形成长时间阻塞。没有可处理事件时返回 `0`。
@@ -274,7 +274,7 @@ EventTimerId event_timer_add(EventScheduler *self, EventId event_id, TimerTick p
 
 同一个 `EventId` 可以拥有多个 event timer。每次调用 `event_timer_add` 都创建一个新的周期任务，删除时必须保存并传回它返回的 `EventTimerId`。首次投递发生在 `period_ticks` 之后，之后按同一周期继续投递。
 
-event timer 到期时生成来源为 `WD_EVENT_SOURCE_TIMER` 的 pending post，再由 `event_scheduler_run_once` 分发。event timer 使用的内部 timer 由调度器管理，不暴露给用户。由于 pending post 仍然按 `EventId` 合并，同一 `EventId` 的多个 timer 如果在旧 post 分发前连续到期，后到的 post 会刷新当前 `EventId` 的 pending `value` 和 `user_data`。
+event timer 到期时使用 trigger 语义同步调用目标 `EventId` 的 handler，事件来源为 `WD_EVENT_SOURCE_TIMER`。它不写入 pending post 池，不影响 `event_is_posted` 的返回值，也不会刷新或取消同一 `EventId` 上已有的 `event_post_delay`。event timer 使用的内部 timer 由调度器管理，不暴露给用户。
 
 ### `event_timer_remove`
 
@@ -283,6 +283,8 @@ int event_timer_remove(EventScheduler *self, EventTimerId id);
 ```
 
 删除指定 event timer，并释放其内部 timer 槽位。`self` 必须有效，`id` 不得为 `EVENT_TIMER_ID_INVALID`。找不到 event timer 时返回 `-1`。删除一个 event timer 不影响同一 `EventId` 上的其他 event timer，也不清除该 `EventId` 已经存在的 pending post。
+
+event timer handler 在 `event_scheduler_run_once` 推进内部 timer 时同步执行。handler 内如果调用 `event_post` 写入 pending post，该 post 仍然会按调度器规则等待后续分发；如果显式调用 `event_trigger`，则会立即嵌套同步分发。
 
 ### `event_monitor_add`
 
@@ -316,7 +318,7 @@ int event_monitor_remove(EventScheduler *self, EventMonitorId id);
 - 外部延时投递通过 `event_post_delay` 或 `event_post(..., delay_ticks, ...)` 写入 delay pending post；同一 `EventId` 重复调用会刷新内容和到期时间。
 - `event_post` 与 `event_post_delay` 共用同一 pending post 资源；立即 post 会清除该 `EventId` 之前 delay post 使用的内部 timer。
 - `event_post_delay` 到期后，内部 timer action 只把 pending post 切换为 ready，并立即释放该 timer。
-- `event_timer_add` 用非零周期内部 timer 周期性生成来源为 `WD_EVENT_SOURCE_TIMER` 的 pending post；`period_ticks == 0U` 非法。
+- `event_timer_add` 用非零周期内部 timer 周期性同步 trigger 来源为 `WD_EVENT_SOURCE_TIMER` 的事件；`period_ticks == 0U` 非法。
 - 同一个 `EventId` 可以注册多个 event timer；每个 event timer 拥有独立 `EventTimerId`，并通过 `event_timer_remove` 删除。
 - `period_ticks == 0U` 的 monitor 由 `event_scheduler_run_once` 主动检查，适合低延迟但会随主循环频率消耗 CPU。
 - `period_ticks != 0U` 的 monitor 附着到内部 timer，只有到期时才检查；主循环可以结合 `event_scheduler_next_delay` 休眠到最近到期点。

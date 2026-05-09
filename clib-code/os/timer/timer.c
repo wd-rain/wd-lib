@@ -190,7 +190,7 @@ static int _timer_stop_active(TimerScheduler *self, Timer *timer)
             timer->next = NULL;
             return 0;
         }
-        *current = (*current)->next;
+        current = &(*current)->next;
     }
     return -1;
 }

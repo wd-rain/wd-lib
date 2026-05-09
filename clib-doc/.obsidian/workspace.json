@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "0ea13f7825c13f5f",
@@ -198,17 +197,17 @@
   },
   "active": "2b32c93ddd528501",
   "lastOpenFiles": [
-    "os/timer.md",
+    "platform/gpio.md",
     "os/event.md",
+    "os.md",
+    "os/timer.md",
     "tool/rb.md",
     "tool/cmdline.md",
     "until.md",
     "tool",
     "os/slco.md",
-    "os.md",
     "platform/isr.md",
     "platform/gpio_isr.md",
-    "platform/gpio.md",
     "platform/i2c.md",
     "platform.md",
     "cmdline-debug.md",
