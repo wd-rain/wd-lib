@@ -321,7 +321,8 @@ TimerId timer_new(TimerScheduler *self)
         return TIMER_ID_INVALID;
     }
 
-    _timer_clear(timer);
+    timer->id = id;
+    timer->next = NULL;
 
     return id;
 }
