@@ -104,3 +104,9 @@ Desktop.ini
 *.temp
 wdlib-tests/
 wdlib-gui/
+
+# Node / Vue / Vite
+node_modules/
+dist/
+*.local
+CLAUDE.md
