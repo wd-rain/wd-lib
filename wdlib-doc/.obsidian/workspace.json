@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "os/event.md",
+                "file": "tool/frame.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "event"
+              "title": "frame"
             }
           }
         ]
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "os/event.md",
+                "file": "tool/frame.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "event 的大纲"
+              "title": "frame 的大纲"
             }
           },
           {
@@ -197,10 +197,10 @@
   },
   "active": "2b32c93ddd528501",
   "lastOpenFiles": [
+    "os/event.md",
     "os/timer.md",
     "os/timer.md.tmp.27164.1778476960088",
     "os/timer.md.tmp.27164.1778476944419",
-    "os/event.md",
     "platform/gpio.md",
     "os.md",
     "tool/rb.md",
